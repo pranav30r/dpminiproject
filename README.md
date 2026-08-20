@@ -148,7 +148,9 @@ Open **MySQL 8.0 Command Line Client** (from Start Menu), enter your root passwo
 ```sql
 source C:/path/to/dpminiproject/organmatch_db.sql
 ```
-
+```sql
+source c:/temp/organmatch_db.sql
+```
 > ⚠️ **Use forward slashes `/` only!** Backslashes cause errors because MySQL interprets `\d`, `\n`, etc. as special commands.
 
 You should see multiple `Query OK` messages — the database, tables, and sample data are now ready.
