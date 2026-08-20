@@ -21,7 +21,7 @@ public class RegistryMatchingService {
 
         MatchResult matchResult = matchingEngine.findBestMatch(
                 organ,
-                registry.getRegisteredRecipients()
+                registry.getWaitingRecipients()
         );
 
         if (matchResult.hasMatch()) {

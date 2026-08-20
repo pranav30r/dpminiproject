@@ -1,33 +1,33 @@
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 /**
  * TransplantIQ - Smart Organ-Recipient Matching System
- * 
+ *
  * Console demo showcasing all 5 Design Patterns:
- *   1. Factory Method  (Jogi)  - OrganFactory creates organ instances
- *   2. Singleton        (Jogi)  - NationalTransplantRegistry single instance
- *   3. Chain of Responsibility (Hiten) - Compatibility handler pipeline
- *   4. Observer         (Rathi) - AllocationService notifies observers on match
- *   5. Proxy            (Chetan) - PrivacyProxy masks PII for unauthorized users
+ *   1. Factory Method  (Jogi)
+ *   2. Singleton       (Jogi)
+ *   3. Chain of Responsibility (Hiten)
+ *   4. Observer        (Rathi)
+ *   5. Proxy           (Chetan)
  */
 public class ChainDemo {
 
     public static void main(String[] args) {
+        printBanner();
 
-        System.out.println("╔══════════════════════════════════════════════════════════════╗");
-        System.out.println("║         TRANSPLANTIQ - Smart Organ Matching System          ║");
-        System.out.println("║              Design Patterns Lab Mini Project               ║");
-        System.out.println("╚══════════════════════════════════════════════════════════════╝");
-        System.out.println();
-
-        // ──────────────────────────────────────────────────────────────
-        // PATTERN 2: Singleton (Jogi)
-        // NationalTransplantRegistry.getInstance() always returns the
-        // same object.  Private constructor prevents external creation.
-        // ──────────────────────────────────────────────────────────────
         NationalTransplantRegistry registry = NationalTransplantRegistry.getInstance();
-        registry.clearInMemoryData();
+        AllocationService allocationService = prepareAllocationService();
+
+        boolean databaseLoaded = registry.refreshFromDatabase();
+        if (databaseLoaded) {
+            allocationService.replaceNotificationsLog(registry.loadNotificationMessages());
+        } else {
+            registry.clearInMemoryData();
+        }
+
+        printRegistryMode(registry);
 
         System.out.println("=== [Jogi] Pattern 2: Singleton ===");
         System.out.println("Registry instance #1 : " + registry.hashCode());
@@ -36,80 +36,64 @@ public class ChainDemo {
         System.out.println("Same instance?       : " + (registry == registryAgain));
         System.out.println();
 
-        // ──────────────────────────────────────────────────────────────
-        // PATTERN 1: Factory Method (Jogi)
-        // OrganFactory.createOrgan(type) returns the correct subclass
-        // (Kidney, Heart, Liver, Lung) without the caller knowing
-        // which concrete class was instantiated.
-        // ──────────────────────────────────────────────────────────────
         System.out.println("=== [Jogi] Pattern 1: Factory Method ===");
-        seedRegistry(registry);
+        if (databaseLoaded) {
+            if (registry.getRegisteredOrgans().isEmpty() || registry.getRegisteredRecipients().isEmpty()) {
+                System.out.println("Database connection is working, but no seed data was found.");
+                System.out.println("Run organmatch_db.sql in MySQL, then rerun ChainDemo.");
+                return;
+            }
+
+            System.out.println("Loaded " + registry.getRegisteredOrgans().size() + " organs from MySQL.");
+            System.out.println("Each organ row was recreated through OrganFactory.createOrgan(...).");
+            printOrganPreview(registry.getAvailableOrgans());
+            System.out.println("Loaded " + registry.getRegisteredRecipients().size() + " recipients from MySQL.");
+        } else {
+            seedRegistry(registry);
+        }
         System.out.println();
 
-        // ──────────────────────────────────────────────────────────────
-        // PATTERN 4: Observer (Rathi)
-        // AllocationService is the Subject.  Three concrete observers
-        // are registered.  When confirmMatch() is called they each
-        // receive the MatchResult automatically.
-        // ──────────────────────────────────────────────────────────────
-        AllocationService allocationService = AllocationService.getInstance();
-        allocationService.clearNotifications();
-        allocationService.addObserver(new TransplantCenterObserver());
-        allocationService.addObserver(new DoctorObserver());
-        allocationService.addObserver(new TransportTeamObserver());
-
-        // ──────────────────────────────────────────────────────────────
-        // PATTERN 3: Chain of Responsibility (Hiten)
-        // Four handlers are chained together.  Each one either rejects
-        // the candidate or passes it to the next handler.
-        // ──────────────────────────────────────────────────────────────
         MatchingConfig config = MatchingConfig.defaultConfig();
-        CompatibilityHandler bloodTypeMatcher       = new BloodTypeMatcher(config);
-        CompatibilityHandler tissueHlaMatcher       = new TissueHLAMatcher(config);
-        CompatibilityHandler geographicDistFilter   = new GeographicDistanceFilter(config);
-        CompatibilityHandler urgencyScoreEvaluator  = new UrgencyScoreEvaluator();
+        CompatibilityHandler bloodTypeMatcher = new BloodTypeMatcher(config);
+        CompatibilityHandler tissueHlaMatcher = new TissueHLAMatcher(config);
+        CompatibilityHandler geographicDistFilter = new GeographicDistanceFilter(config);
+        CompatibilityHandler urgencyScoreEvaluator = new UrgencyScoreEvaluator();
 
         bloodTypeMatcher.setNext(tissueHlaMatcher);
         tissueHlaMatcher.setNext(geographicDistFilter);
         geographicDistFilter.setNext(urgencyScoreEvaluator);
 
         MatchingEngine engine = new MatchingEngine(bloodTypeMatcher);
-
-        // RegistryMatchingService ties Registry, Engine and AllocationService together
         RegistryMatchingService matchingService = new RegistryMatchingService(
                 registry, engine, allocationService
         );
 
-        // ──────────────────────────────────────────────────────────
-        // RUN MATCHING FOR KIDNEY K101
-        // ──────────────────────────────────────────────────────────
+        List<String> organIdsToMatch = selectOrganIdsForDemo(registry);
+        MatchResult proxyPreviewMatch = null;
+
         System.out.println("=== [Hiten] Pattern 3: Chain of Responsibility ===");
-        System.out.println("Running matching pipeline for Organ ID: K101 (Kidney, O+)");
-        System.out.println();
+        for (String organId : organIdsToMatch) {
+            DonorOrgan organ = registry.findOrganById(organId);
+            if (organ == null) {
+                continue;
+            }
 
-        MatchResult kidneyResult = matchingService.findBestMatchForOrgan("K101");
-        printEvaluationDetails(kidneyResult);
+            System.out.println("Running matching pipeline for Organ ID: " + organ.getOrganId()
+                    + " (" + organ.getOrganType() + ", " + organ.getBloodGroup() + ")");
+            System.out.println();
 
-        System.out.println("─── Best Match for K101 ───");
-        printBestMatch(kidneyResult);
-        System.out.println();
+            MatchResult result = matchingService.findBestMatchForOrgan(organ.getOrganId());
+            printEvaluationDetails(result);
 
-        // ──────────────────────────────────────────────────────────
-        // RUN MATCHING FOR HEART H201
-        // ──────────────────────────────────────────────────────────
-        System.out.println("Running matching pipeline for Organ ID: H201 (Heart, A-)");
-        System.out.println();
+            System.out.println("--- Best Match for " + organ.getOrganId() + " ---");
+            printBestMatch(result);
+            System.out.println();
 
-        MatchResult heartResult = matchingService.findBestMatchForOrgan("H201");
-        printEvaluationDetails(heartResult);
+            if (proxyPreviewMatch == null && result.hasMatch()) {
+                proxyPreviewMatch = result;
+            }
+        }
 
-        System.out.println("─── Best Match for H201 ───");
-        printBestMatch(heartResult);
-        System.out.println();
-
-        // ──────────────────────────────────────────────────────────
-        // OBSERVER NOTIFICATIONS LOG
-        // ──────────────────────────────────────────────────────────
         System.out.println("=== [Rathi] Pattern 4: Observer - Notification Log ===");
         List<String> log = allocationService.getNotificationsLog();
         if (log.isEmpty()) {
@@ -121,17 +105,11 @@ public class ChainDemo {
         }
         System.out.println();
 
-        // ──────────────────────────────────────────────────────────────
-        // PATTERN 5: Proxy (Chetan)
-        // PrivacyProxy wraps a real Recipient (which implements
-        // PatientRecord).  PII fields are masked for unauthorized users
-        // while medical fields pass through untouched.
-        // ──────────────────────────────────────────────────────────────
         System.out.println("=== [Chetan] Pattern 5: Proxy (Privacy Protection) ===");
-        if (kidneyResult.hasMatch()) {
-            PatientRecord realRecord = kidneyResult.getBestRecipient();
+        if (proxyPreviewMatch != null && proxyPreviewMatch.hasMatch()) {
+            PatientRecord realRecord = proxyPreviewMatch.getBestRecipient();
             PatientRecord unauthorizedView = new PrivacyProxy(realRecord, false);
-            PatientRecord authorizedView   = new PrivacyProxy(realRecord, true);
+            PatientRecord authorizedView = new PrivacyProxy(realRecord, true);
 
             System.out.println();
             System.out.println("--- UNAUTHORIZED VIEW (PII masked) ---");
@@ -140,28 +118,81 @@ public class ChainDemo {
             System.out.println();
             System.out.println("--- AUTHORIZED CLINICAL VIEW (PII visible) ---");
             printPatientRecord(authorizedView);
+        } else {
+            System.out.println("  No successful match was available for proxy preview.");
         }
         System.out.println();
 
-        // ──────────────────────────────────────────────────────────
-        // SUMMARY
-        // ──────────────────────────────────────────────────────────
-        System.out.println("╔══════════════════════════════════════════════════════════════╗");
-        System.out.println("║                       SYSTEM SUMMARY                        ║");
-        System.out.println("╠══════════════════════════════════════════════════════════════╣");
-        System.out.println("║  Registered Organs     : " + pad(registry.getRegisteredOrgans().size()) + "║");
-        System.out.println("║  Registered Recipients : " + pad(registry.getRegisteredRecipients().size()) + "║");
-        System.out.println("║  Successful Matches    : " + pad(registry.getRecordedMatches().size()) + "║");
-        System.out.println("║  Observer Alerts Sent  : " + pad(allocationService.getNotificationsLog().size()) + "║");
-        System.out.println("╚══════════════════════════════════════════════════════════════╝");
+        System.out.println("=== SYSTEM SUMMARY ===");
+        System.out.println("Registered Organs     : " + registry.getRegisteredOrgans().size());
+        System.out.println("Available Organs      : " + registry.getAvailableOrgans().size());
+        System.out.println("Registered Recipients : " + registry.getRegisteredRecipients().size());
+        System.out.println("Waiting Recipients    : " + registry.getWaitingRecipients().size());
+        System.out.println("Successful Matches    : " + registry.getRecordedMatches().size());
+        System.out.println("Observer Alerts Sent  : " + allocationService.getNotificationsLog().size());
     }
 
-    // ──────────────────────────────────────────────────────────────
-    // HELPER : Seed sample data into the registry
-    // Uses Factory Method inside registerOrgan()
-    // ──────────────────────────────────────────────────────────────
+    private static AllocationService prepareAllocationService() {
+        AllocationService allocationService = AllocationService.getInstance();
+        allocationService.clearObservers();
+        allocationService.clearNotifications();
+        allocationService.addObserver(new TransplantCenterObserver());
+        allocationService.addObserver(new DoctorObserver());
+        allocationService.addObserver(new TransportTeamObserver());
+        return allocationService;
+    }
+
+    private static void printBanner() {
+        System.out.println("==============================================================");
+        System.out.println("TRANSPLANTIQ - Smart Organ Matching System");
+        System.out.println("Design Patterns Lab Mini Project");
+        System.out.println("==============================================================");
+        System.out.println();
+    }
+
+    private static void printRegistryMode(NationalTransplantRegistry registry) {
+        if (registry.isDatabaseConnected()) {
+            System.out.println("Data mode: MySQL-backed registry");
+            System.out.println("Database: " + registry.getDatabaseUrl());
+        } else {
+            System.out.println("Data mode: In-memory demo fallback");
+            System.out.println("Tip: add mysql-connector-j to the classpath and set the DB password to enable MySQL mode.");
+        }
+        System.out.println();
+    }
+
+    private static void printOrganPreview(List<DonorOrgan> organs) {
+        if (organs.isEmpty()) {
+            System.out.println("No available organs are currently loaded.");
+            return;
+        }
+
+        int previewCount = Math.min(organs.size(), 3);
+        for (int i = 0; i < previewCount; i++) {
+            DonorOrgan organ = organs.get(i);
+            System.out.println("  Hydrated via Factory: " + organ.getOrganType()
+                    + " (ID: " + organ.getOrganId() + ", Status: " + organ.getStatus() + ")");
+            organ.getOrgan().displayInfo();
+        }
+    }
+
+    private static List<String> selectOrganIdsForDemo(NationalTransplantRegistry registry) {
+        List<String> organIds = new ArrayList<>();
+        for (DonorOrgan organ : registry.getAvailableOrgans()) {
+            organIds.add(organ.getOrganId());
+            if (organIds.size() == 2) {
+                break;
+            }
+        }
+
+        if (organIds.isEmpty() && registry.findOrganById("K101") != null) {
+            organIds.add("K101");
+        }
+
+        return organIds;
+    }
+
     private static void seedRegistry(NationalTransplantRegistry registry) {
-        // Kidney donor in Nagpur
         DonorOrgan kidney = registry.registerOrgan(
                 "K101", "kidney", "O+", 90,
                 new Location("Nagpur", 21.1458, 79.0882), "AVAILABLE"
@@ -170,7 +201,6 @@ public class ChainDemo {
                 + " (ID: " + kidney.getOrganId() + ")");
         kidney.getOrgan().displayInfo();
 
-        // Heart donor in Mumbai
         DonorOrgan heart = registry.registerOrgan(
                 "H201", "heart", "A-", 85,
                 new Location("Mumbai", 19.0760, 72.8777), "AVAILABLE"
@@ -179,7 +209,6 @@ public class ChainDemo {
                 + " (ID: " + heart.getOrganId() + ")");
         heart.getOrgan().displayInfo();
 
-        // Register recipients
         Arrays.asList(
                 new Recipient("P101", "Aarav Mehta", 44,
                         "98XXXXXX01", "12 MG Road, Nagpur",
@@ -221,9 +250,6 @@ public class ChainDemo {
         System.out.println("  Registered " + registry.getRegisteredRecipients().size() + " recipients.");
     }
 
-    // ──────────────────────────────────────────────────────────────
-    // HELPER : Print detailed evaluation for every candidate
-    // ──────────────────────────────────────────────────────────────
     private static void printEvaluationDetails(MatchResult result) {
         for (RecipientEvaluation eval : result.getAllEvaluations()) {
             System.out.println("  Recipient : " + eval.getRecipient().getPatientId()
@@ -240,14 +266,12 @@ public class ChainDemo {
         }
     }
 
-    // ──────────────────────────────────────────────────────────────
-    // HELPER : Print the best-match summary
-    // ──────────────────────────────────────────────────────────────
     private static void printBestMatch(MatchResult result) {
         if (!result.hasMatch()) {
             System.out.println("  No suitable recipient was found.");
             return;
         }
+
         Recipient best = result.getBestRecipient();
         RecipientEvaluation eval = result.getBestEvaluation();
 
@@ -259,11 +283,11 @@ public class ChainDemo {
         System.out.println("  Urgency      : " + best.getUrgency());
         System.out.println("  Final Score  : " + eval.getCompatibilityScore());
         System.out.println("  Distance     : " + round(eval.getDistanceKm()) + " km");
+        if (result.getMatchId() != null) {
+            System.out.println("  Match ID     : " + result.getMatchId());
+        }
     }
 
-    // ──────────────────────────────────────────────────────────────
-    // HELPER : Print a PatientRecord (works with Proxy or Real)
-    // ──────────────────────────────────────────────────────────────
     private static void printPatientRecord(PatientRecord record) {
         System.out.println("  Patient ID  : " + record.getPatientId());
         System.out.println("  Name        : " + record.getName());
@@ -278,9 +302,5 @@ public class ChainDemo {
 
     private static double round(double value) {
         return Math.round(value * 10.0) / 10.0;
-    }
-
-    private static String pad(int number) {
-        return String.format("%-35d", number);
     }
 }
