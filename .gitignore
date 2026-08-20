@@ -1,0 +1,17 @@
+# Compiled class files
+*.class
+
+# MySQL JDBC connector
+mysql-connector-j-*.jar
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+
+# OS files
+.DS_Store
+Thumbs.db
