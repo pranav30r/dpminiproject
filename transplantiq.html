@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TransplantIQ &mdash; National Organ Allocation System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+  :root{
+    --bg:#06060e;--bg2:#0c0c1a;--bg3:#12121f;
+    --surface:rgba(255,255,255,0.04);--surface2:rgba(255,255,255,0.07);
+    --border:rgba(255,255,255,0.09);--border2:rgba(255,255,255,0.14);
+    --text:#ffffff;--text2:rgba(255,255,255,0.6);--text3:rgba(255,255,255,0.35);
+    --purple:#8b5cf6;--purple2:#7c3aed;--cyan:#06b6d4;
+    --grad:linear-gradient(135deg,#8b5cf6,#06b6d4);
+    --grad-text:linear-gradient(90deg,#a78bfa,#67e8f9);
+    --blob1:rgba(120,40,200,0.35);--blob2:rgba(6,182,212,0.28);--blob3:rgba(236,72,153,0.15);
+    --card-glow:0 8px 40px rgba(139,92,246,0.12);
+    --r:10px;--rl:14px;--rxl:9999px;
+  }
+  [data-theme="light"]{
+    --bg:#f0eeff;--bg2:#e8e3ff;--bg3:#ddd7ff;
+    --surface:rgba(139,92,246,0.06);--surface2:rgba(139,92,246,0.1);
+    --border:rgba(139,92,246,0.15);--border2:rgba(139,92,246,0.25);
+    --text:#0f0a1e;--text2:rgba(15,10,30,0.6);--text3:rgba(15,10,30,0.35);
+    --blob1:rgba(139,92,246,0.18);--blob2:rgba(6,182,212,0.14);--blob3:rgba(236,72,153,0.1);
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:15px;line-height:1.6;overflow-x:hidden;transition:background .5s,color .5s}
+  a{color:inherit;text-decoration:none}
+
+  .blob-field{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .blob{position:absolute;border-radius:50%;filter:blur(80px);animation:blobDrift 20s ease-in-out infinite alternate}
+  .blob-1{width:600px;height:600px;background:var(--blob1);top:-150px;left:-100px;animation-duration:22s}
+  .blob-2{width:500px;height:500px;background:var(--blob2);top:100px;right:-120px;animation-duration:18s;animation-direction:alternate-reverse}
+  .blob-3{width:350px;height:350px;background:var(--blob3);bottom:20%;left:30%;animation-duration:25s}
+  @keyframes blobDrift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(40px,30px) scale(1.1)}100%{transform:translate(-20px,20px) scale(.95)}}
+  .page-wrap{position:relative;z-index:1}
+
+  nav{position:sticky;top:0;z-index:100;padding:0 2.5rem;height:64px;display:flex;align-items:center;justify-content:space-between;background:rgba(6,6,14,.7);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+  [data-theme="light"] nav{background:rgba(240,238,255,.8)}
+  .nav-logo{display:flex;align-items:center;gap:.55rem;font-family:'Sora',sans-serif;font-size:1.3rem;font-weight:800;letter-spacing:-.02em}
+  .nav-logo .dot{color:var(--purple)}
+  .nav-logo .glyph{font-size:1.5rem;animation:hb 1.6s ease-in-out infinite;filter:drop-shadow(0 0 8px rgba(139,92,246,.5))}
+  @keyframes hb{0%,100%{transform:scale(1)}14%{transform:scale(1.2)}28%{transform:scale(1)}42%{transform:scale(1.12)}}
+  .nav-links{display:flex;align-items:center;gap:.15rem;list-style:none}
+  .nav-links a{color:var(--text2);font-size:.875rem;font-weight:500;padding:.45rem 1rem;border-radius:var(--rxl);transition:all .2s}
+  .nav-links a:hover{color:var(--text);background:var(--surface)}
+  .theme-toggle{background:var(--surface);border:1px solid var(--border2);color:var(--text2);width:38px;height:38px;border-radius:var(--rxl);cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+  .theme-toggle:hover{color:var(--text);border-color:var(--purple);box-shadow:0 0 14px rgba(139,92,246,.3)}
+
+  .container{max-width:1160px;margin:0 auto;padding:0 2rem}
+  .pill-label{display:inline-flex;align-items:center;gap:.5rem;border:1px solid var(--border2);border-radius:var(--rxl);padding:.35rem 1.1rem;font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);background:var(--surface);backdrop-filter:blur(8px)}
+  .pip{width:6px;height:6px;border-radius:50%;background:var(--grad);animation:pp 1.2s ease-in-out infinite alternate;display:inline-block}
+  @keyframes pp{from{opacity:.5}to{opacity:1}}
+  .grad-text{background:var(--grad-text);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .btn-main{display:inline-flex;align-items:center;gap:.5rem;background:var(--grad);color:#fff;border:none;border-radius:var(--rxl);padding:.8rem 2.1rem;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .25s;box-shadow:0 4px 24px rgba(139,92,246,.4);font-family:'Inter',sans-serif;letter-spacing:.01em}
+  .btn-main:hover{transform:translateY(-2px);box-shadow:0 8px 36px rgba(139,92,246,.55)}
+  .btn-text{display:inline-flex;align-items:center;gap:.4rem;background:transparent;color:var(--text2);border:none;border-radius:var(--rxl);padding:.8rem 1.5rem;font-size:.9rem;font-weight:600;cursor:pointer;transition:color .2s;font-family:'Inter',sans-serif}
+  .btn-text:hover{color:var(--text)}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);transition:border-color .25s,box-shadow .25s,transform .25s}
+  .card:hover{border-color:rgba(139,92,246,.4);box-shadow:var(--card-glow);transform:translateY(-4px)}
+  section{padding:6rem 0;position:relative}
+  .sec-top{text-align:center;margin-bottom:3.5rem}
+  .sec-heading{font-family:'Sora',sans-serif;font-size:clamp(2rem,4vw,3.2rem);font-weight:800;letter-spacing:-.04em;margin:.8rem 0;line-height:1.1}
+  .sec-sub{color:var(--text2);font-size:.975rem;max-width:500px;margin:.8rem auto 0;line-height:1.75}
+  .divider{height:1px;background:linear-gradient(90deg,transparent,var(--border2),transparent)}
+
+  /* HERO */
+  #hero{min-height:calc(100vh - 64px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4rem 2rem 7rem;position:relative}
+  .hero-h{font-family:'Sora',sans-serif;font-size:clamp(3rem,6.5vw,5.6rem);font-weight:800;line-height:1.08;letter-spacing:-.04em;margin:.8rem 0 1.4rem;max-width:800px}
+  .hero-sub{font-size:1.05rem;color:var(--text2);max-width:540px;margin:0 auto 2.6rem;font-weight:400;line-height:1.8}
+  .hero-ctas{display:flex;align-items:center;gap:.5rem;justify-content:center;margin-bottom:3.5rem;flex-wrap:wrap}
+  .hero-stats-row{display:flex;gap:0;justify-content:center;border:1px solid var(--border);border-radius:var(--rl);background:var(--surface);backdrop-filter:blur(16px);overflow:hidden;max-width:520px;margin:0 auto}
+  .hstat{flex:1;padding:1.2rem 1rem;border-right:1px solid var(--border);text-align:center}
+  .hstat:last-child{border-right:none}
+  .hstat-n{font-family:'Sora',sans-serif;font-size:2rem;font-weight:800;letter-spacing:-.04em;background:var(--grad-text);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:block;line-height:1;margin-bottom:.25rem}
+  .hstat-l{font-size:.68rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em}
+  .scroll-ind{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);width:28px;height:48px;border:2px solid var(--border2);border-radius:14px;display:flex;justify-content:center;padding-top:7px}
+  .scroll-dot{width:4px;height:4px;border-radius:50%;background:var(--text3);animation:sd 1.7s ease-in-out infinite}
+  @keyframes sd{0%,100%{transform:translateY(0);opacity:.3}50%{transform:translateY(14px);opacity:1}}
+
+  /* REGISTRY */
+  #registry{background:transparent}
+  .organ-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:1.25rem;margin-bottom:1.5rem}
+  .ocard{padding:1.8rem;cursor:pointer;position:relative;overflow:hidden}
+  .ocard-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem}
+  .obadge{font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--rxl);padding:.25rem .8rem;color:var(--text2)}
+  .oicon{font-size:2.2rem}
+  .oid{font-family:'Sora',sans-serif;font-size:1.8rem;font-weight:800;letter-spacing:-.04em;background:var(--grad-text);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.2rem}
+  .otype{font-size:.8rem;color:var(--text3);margin-bottom:1.1rem}
+  .oattrs{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:1.1rem}
+  .al{font-size:.65rem;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.15rem}
+  .av{font-size:.875rem;color:var(--text);font-weight:600}
+  .hla-row{margin-bottom:.8rem}
+  .hla-lbl{display:flex;justify-content:space-between;font-size:.7rem;color:var(--text3);margin-bottom:.35rem;font-weight:500}
+  .hla-track{height:4px;background:var(--border);border-radius:var(--rxl);overflow:hidden}
+  .hla-fill{height:100%;background:var(--grad);border-radius:var(--rxl)}
+  .ofoot{display:flex;align-items:center;gap:.45rem;font-size:.72rem;font-weight:600;color:var(--cyan)}
+  .spip{width:6px;height:6px;border-radius:50%;background:#22c55e;animation:pp 1s ease-in-out infinite alternate;box-shadow:0 0 6px rgba(34,197,94,.5)}
+
+  .reg-panel{border:1px solid var(--border);border-radius:var(--rl);background:var(--surface);backdrop-filter:blur(18px);overflow:hidden}
+  .rp-hdr{display:flex;justify-content:space-between;align-items:center;padding:1.2rem 1.8rem;cursor:pointer;user-select:none}
+  .rp-hdr-title{font-size:.88rem;font-weight:600;display:flex;align-items:center;gap:.55rem}
+  .rp-hdr-icon{color:var(--text3);font-size:.8rem;transition:transform .25s}
+  .rp-hdr-icon.open{transform:rotate(180deg)}
+  .rp-body{display:none;padding:1.8rem;border-top:1px solid var(--border)}
+  .rp-body.open{display:block}
+  .frow{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:1rem;margin-bottom:1.4rem}
+  .fg{display:flex;flex-direction:column;gap:.4rem}
+  .fl{font-size:.68rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em}
+  .fi{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:var(--r);padding:.65rem .9rem;font-size:.875rem;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s,box-shadow .2s;width:100%}
+  .fi:focus{border-color:rgba(139,92,246,.5);box-shadow:0 0 0 3px rgba(139,92,246,.1)}
+
+  /* MATCHING */
+  #matching{background:transparent}
+  .pipe-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;position:relative}
+  .pipe-grid::before{content:'';position:absolute;top:3.2rem;left:13%;right:13%;height:1px;background:linear-gradient(90deg,var(--purple),var(--cyan));opacity:.2;pointer-events:none}
+  .pstep{padding:1.6rem 1.2rem 1.5rem;text-align:center;position:relative;z-index:1}
+  .pstep-icon{width:50px;height:50px;border-radius:var(--rxl);background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:1.35rem;margin:0 auto 1rem;box-shadow:0 4px 18px rgba(139,92,246,.28)}
+  .pstep-num{font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--purple);margin-bottom:.35rem}
+  .pstep-name{font-family:'Sora',sans-serif;font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:.5rem;line-height:1.2}
+  .pstep-desc{font-size:.75rem;color:var(--text3);line-height:1.65}
+  .match-card{padding:2rem;display:grid;grid-template-columns:1fr auto 1fr;gap:2rem;align-items:center}
+  .mc-label{font-size:.65rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.55rem}
+  .mc-val{font-family:'Sora',sans-serif;font-size:1.5rem;font-weight:800;letter-spacing:-.03em;background:var(--grad-text);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.25rem}
+  .mc-detail{font-size:.78rem;color:var(--text3);line-height:1.65}
+  .mc-center{text-align:center}
+  .score-ring{width:110px;height:110px;border-radius:50%;background:conic-gradient(#8b5cf6 0% 99%,rgba(255,255,255,.07) 99%);display:flex;align-items:center;justify-content:center;margin:0 auto .7rem;position:relative}
+  .score-ring::before{content:'';position:absolute;inset:8px;border-radius:50%;background:var(--bg2)}
+  .score-num{position:relative;z-index:1;font-family:'Sora',sans-serif;font-size:1.65rem;font-weight:800;background:var(--grad-text);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .score-sub{font-size:.7rem;color:var(--text3);font-weight:500}
+  .srow{margin-top:1rem}
+  .srow-top{display:flex;justify-content:space-between;font-size:.73rem;color:var(--text3);margin-bottom:.35rem;font-weight:500}
+  .sbar{height:4px;background:var(--border);border-radius:var(--rxl);overflow:hidden}
+  .sbar-fill{height:100%;background:var(--grad);border-radius:var(--rxl)}
+
+  /* RECIPIENTS */
+  #recipients{background:transparent}
+  .priv-row{display:flex;justify-content:center;margin-bottom:2.5rem}
+  .priv-seg{display:flex;border:1px solid var(--border);border-radius:var(--rxl);padding:4px;background:var(--surface);backdrop-filter:blur(8px);gap:4px}
+  .pseg-btn{border:none;background:transparent;color:var(--text2);border-radius:var(--rxl);padding:.5rem 1.3rem;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif;display:flex;align-items:center;gap:.4rem}
+  .pseg-btn.active{background:var(--grad);color:#fff;box-shadow:0 2px 14px rgba(139,92,246,.35)}
+  .tbl-wrap{border:1px solid var(--border);border-radius:var(--rl);background:var(--surface);backdrop-filter:blur(16px);overflow:hidden}
+  table{width:100%;border-collapse:collapse}
+  thead{border-bottom:1px solid var(--border)}
+  th{text-align:left;padding:1rem 1.3rem;font-size:.68rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em}
+  td{padding:.9rem 1.3rem;font-size:.85rem;color:var(--text2);border-bottom:1px solid var(--border)}
+  tr:last-child td{border-bottom:none}
+  tbody tr{transition:background .15s}
+  tbody tr:hover{background:var(--surface2)}
+  .tid{font-weight:700;color:var(--purple);font-size:.8rem}
+  .tname{font-weight:600;color:var(--text)}
+  .mx{display:inline-block;background:rgba(255,255,255,.08);color:transparent;border-radius:4px;filter:blur(5px);user-select:none;transition:filter .4s,color .4s,background .4s;padding:0 2px}
+  .mx.ok{filter:none;color:var(--text);background:transparent}
+  .upill{display:inline-block;font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:var(--rxl);padding:.2rem .65rem}
+  .urg-CRITICAL{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.22)}
+  .urg-HIGH{background:rgba(249,115,22,.1);color:#fb923c;border:1px solid rgba(249,115,22,.2)}
+  .urg-MEDIUM{background:rgba(234,179,8,.08);color:#facc15;border:1px solid rgba(234,179,8,.18)}
+  .urg-LOW{background:rgba(34,197,94,.08);color:#4ade80;border:1px solid rgba(34,197,94,.16)}
+  .spill{display:inline-block;font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:var(--rxl);padding:.2rem .65rem;background:rgba(139,92,246,.1);color:#a78bfa;border:1px solid rgba(139,92,246,.2)}
+  .spill.w{background:rgba(100,116,139,.08);color:#94a3b8;border-color:rgba(100,116,139,.16)}
+
+  /* FOOTER */
+  footer{padding:4rem 0 2rem;border-top:1px solid var(--border)}
+  .ftop{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:3rem;padding-bottom:3rem;border-bottom:1px solid var(--border);margin-bottom:2rem}
+  .fbrand{font-family:'Sora',sans-serif;font-size:1.5rem;font-weight:800;letter-spacing:-.03em;margin-bottom:.6rem}
+  .fbrand .dot{color:var(--purple)}
+  .fdesc{font-size:.82rem;color:var(--text3);line-height:1.75;max-width:270px}
+  .fctitle{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:1rem}
+  .flinks{list-style:none;display:grid;gap:.6rem}
+  .flinks a{font-size:.82rem;color:var(--text3);transition:color .18s}
+  .flinks a:hover{color:var(--text)}
+  .fbot{display:flex;justify-content:space-between;font-size:.75rem;color:var(--text3)}
+  .chips{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:1.2rem}
+  .chip{font-size:.65rem;font-weight:600;border:1px solid var(--border2);border-radius:var(--rxl);padding:.2rem .65rem;color:var(--text3)}
+
+  /* TOASTS */
+  .toasts{position:fixed;bottom:1.5rem;right:1.5rem;z-index:999;display:grid;gap:.6rem;pointer-events:none}
+  .tst{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rl);padding:.85rem 1.1rem;backdrop-filter:blur(20px);font-size:.8rem;max-width:290px;animation:tIn .3s cubic-bezier(.34,1.56,.64,1);pointer-events:auto;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+  .tst-t{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--purple);margin-bottom:.22rem}
+  .tst-m{color:var(--text2);line-height:1.5}
+  @keyframes tIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+  @media(max-width:960px){
+    .pipe-grid{grid-template-columns:1fr 1fr}.pipe-grid::before{display:none}
+    .match-card{grid-template-columns:1fr}
+    .ftop{grid-template-columns:1fr 1fr}
+    .nav-links{display:none}
+    .organ-grid{grid-template-columns:1fr}
+  }
+  @media(max-width:600px){
+    .pipe-grid{grid-template-columns:1fr}
+    .ftop{grid-template-columns:1fr}
+    .hero-stats-row{flex-direction:column;border:none}
+    .hstat{border-right:none;border-bottom:1px solid var(--border)}
+    .hstat:last-child{border-bottom:none}
+  }
+  </style>
+</head>
+<body>
+<div class="blob-field" aria-hidden="true">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+</div>
+<div class="page-wrap">
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo"><span class="glyph">🫀</span>Transplant<span class="dot">IQ.</span></div>
+  <ul class="nav-links">
+    <li><a href="#hero">Home</a></li>
+    <li><a href="#registry">Registry</a></li>
+    <li><a href="#matching">Matching</a></li>
+    <li><a href="#recipients">Recipients</a></li>
+  </ul>
+  <button class="theme-toggle" id="themeBtn" aria-label="Toggle theme">☀️</button>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <span class="pill-label"><span class="pip"></span>Design Patterns Lab &mdash; Mini Project</span>
+  <h1 class="hero-h">Smart <span class="grad-text">Organ&#8209;Recipient</span> Matching System</h1>
+  <p class="hero-sub">A medically rigorous, design-pattern-driven allocation engine. Five patterns. One life-saving decision. MySQL-backed and fully auditable.</p>
+  <div class="hero-ctas">
+    <a href="#registry" class="btn-main">&#8594;&nbsp;View Registry</a>
+    <a href="#matching" class="btn-text">&#9654;&nbsp;Run Matching Pipeline</a>
+  </div>
+  <div class="hero-stats-row">
+    <div class="hstat"><span class="hstat-n" id="sOrgans">3</span><div class="hstat-l">Donor Organs</div></div>
+    <div class="hstat"><span class="hstat-n">11</span><div class="hstat-l">Recipients</div></div>
+    <div class="hstat"><span class="hstat-n">5</span><div class="hstat-l">Design Patterns</div></div>
+    <div class="hstat"><span class="hstat-n">2</span><div class="hstat-l">Matches Saved</div></div>
+  </div>
+  <div class="scroll-ind"><div class="scroll-dot"></div></div>
+</section>
+
+<div class="divider"></div>
+
+<!-- REGISTRY -->
+<section id="registry">
+  <div class="container">
+    <div class="sec-top">
+      <span class="pill-label"><span class="pip"></span>Factory Method Pattern</span>
+      <h2 class="sec-heading">Donor Organ <span class="grad-text">Registry</span></h2>
+      <p class="sec-sub">Each organ is instantiated via <code style="color:var(--purple);font-size:.85em">OrganFactory.createOrgan()</code> — the Factory Method pattern in action.</p>
+    </div>
+    <div class="organ-grid" id="organGrid">
+      <div class="card ocard" onclick="pickOrgan('K101')">
+        <div class="ocard-top"><span class="obadge">Kidney &mdash; Renal</span><span class="oicon">🟤</span></div>
+        <div class="oid">K101</div><div class="otype">Kidney &bull; Nagpur, MH</div>
+        <div class="oattrs"><div><div class="al">Blood Group</div><div class="av">O+</div></div><div><div class="al">City</div><div class="av">Nagpur</div></div></div>
+        <div class="hla-row"><div class="hla-lbl"><span>HLA Profile</span><span>88%</span></div><div class="hla-track"><div class="hla-fill" style="width:88%"></div></div></div>
+        <div class="ofoot"><span class="spip"></span>Available for Allocation</div>
+      </div>
+      <div class="card ocard" onclick="pickOrgan('H201')">
+        <div class="ocard-top"><span class="obadge">Heart &mdash; Cardiac</span><span class="oicon">🫀</span></div>
+        <div class="oid">H201</div><div class="otype">Heart &bull; Mumbai, MH</div>
+        <div class="oattrs"><div><div class="al">Blood Group</div><div class="av">A&minus;</div></div><div><div class="al">City</div><div class="av">Mumbai</div></div></div>
+        <div class="hla-row"><div class="hla-lbl"><span>HLA Profile</span><span>72%</span></div><div class="hla-track"><div class="hla-fill" style="width:72%"></div></div></div>
+        <div class="ofoot"><span class="spip"></span>Available for Allocation</div>
+      </div>
+      <div class="card ocard" onclick="pickOrgan('L301')">
+        <div class="ocard-top"><span class="obadge">Liver &mdash; Hepatic</span><span class="oicon">🟡</span></div>
+        <div class="oid">L301</div><div class="otype">Liver &bull; Pune, MH</div>
+        <div class="oattrs"><div><div class="al">Blood Group</div><div class="av">B+</div></div><div><div class="al">City</div><div class="av">Pune</div></div></div>
+        <div class="hla-row"><div class="hla-lbl"><span>HLA Profile</span><span>65%</span></div><div class="hla-track"><div class="hla-fill" style="width:65%"></div></div></div>
+        <div class="ofoot"><span class="spip"></span>Available for Allocation</div>
+      </div>
+    </div>
+    <div class="reg-panel">
+      <div class="rp-hdr" onclick="toggleReg()">
+        <span class="rp-hdr-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:var(--purple)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Register New Organ via Factory Method</span>
+        <span class="rp-hdr-icon" id="rpArr">&#8964;</span>
+      </div>
+      <div class="rp-body" id="rpBody">
+        <div class="frow">
+          <div class="fg"><label class="fl">Organ ID</label><input class="fi" id="fId" placeholder="e.g. Lu401"/></div>
+          <div class="fg"><label class="fl">Organ Type</label><select class="fi" id="fType"><option value="kidney">Kidney</option><option value="heart">Heart</option><option value="liver">Liver</option><option value="lung">Lung</option></select></div>
+          <div class="fg"><label class="fl">Blood Group</label><select class="fi" id="fBg"><option>O+</option><option>O-</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option></select></div>
+          <div class="fg"><label class="fl">HLA %</label><input class="fi" id="fHla" type="number" min="1" max="100" value="80"/></div>
+          <div class="fg"><label class="fl">Donor City</label><select class="fi" id="fCity"><option>Nagpur</option><option>Mumbai</option><option>Pune</option><option>Thane</option><option>Nashik</option></select></div>
+        </div>
+        <button class="btn-main" onclick="addOrgan()">Create &amp; Register via Factory</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- MATCHING -->
+<section id="matching">
+  <div class="container">
+    <div class="sec-top">
+      <span class="pill-label"><span class="pip"></span>Chain of Responsibility Pattern</span>
+      <h2 class="sec-heading">4-Step <span class="grad-text">Matching Pipeline</span></h2>
+      <p class="sec-sub">Four handlers are chained. Each evaluates the candidate and either rejects or passes them forward.</p>
+    </div>
+    <div class="pipe-grid">
+      <div class="card pstep"><div class="pstep-icon">🩸</div><div class="pstep-num">Step 01</div><div class="pstep-name">Blood Type Matcher</div><div class="pstep-desc">ABO compatibility gate. Exact match +20, compatible +15. Mismatch is immediately rejected.</div></div>
+      <div class="card pstep"><div class="pstep-icon">🧬</div><div class="pstep-num">Step 02</div><div class="pstep-name">HLA Tissue Matcher</div><div class="pstep-desc">HLA scoring — below threshold is rejected. Proportional score up to +40.</div></div>
+      <div class="card pstep"><div class="pstep-icon">📍</div><div class="pstep-num">Step 03</div><div class="pstep-name">Geographic Filter</div><div class="pstep-desc">Haversine-formula distance check. Beyond radius is rejected. Proximity up to +15.</div></div>
+      <div class="card pstep"><div class="pstep-icon">🚨</div><div class="pstep-num">Step 04</div><div class="pstep-name">Urgency Evaluator</div><div class="pstep-desc">CRITICAL +25 &bull; HIGH +15 &bull; MEDIUM +10 &bull; LOW +5. Highest composite wins.</div></div>
+    </div>
+    <div class="card match-card">
+      <div>
+        <div class="mc-label">Donor Organ</div>
+        <div class="mc-val" id="mcOrganId">K101</div>
+        <div class="mc-detail" id="mcOrganDetail">Kidney &bull; O+ &bull; Nagpur, MH<br>HLA 88% &bull; Status: AVAILABLE</div>
+        <div class="srow" style="margin-top:1.6rem"><div class="srow-top"><span id="mcSecondLabel">H201 &rarr; P105 (Heart Match)</span><span style="color:var(--purple)" id="mcSecondScore">96 pts</span></div><div class="sbar"><div class="sbar-fill" id="mcSecondBar" style="width:96%"></div></div></div>
+      </div>
+      <div class="mc-center">
+        <div class="score-ring" id="mcScoreRing"><span class="score-num" id="mcScore">99</span></div>
+        <div class="score-sub" id="mcScoreSub">Composite Score &bull; K101 &rarr; P102<br><span style="margin-top:.3rem;display:block">Observer Pattern &bull; 6 alerts sent</span></div>
+      </div>
+      <div>
+        <div class="mc-label">Best Recipient</div>
+        <div class="mc-val" id="mcRecipId">P102</div>
+        <div class="mc-detail" id="mcRecipDetail">Rahul Sharma &bull; O+ &bull; Nagpur<br>CRITICAL Urgency &bull; 2.1 km away</div>
+        <div class="srow" style="margin-top:1.6rem"><div class="srow-top"><span>HLA Compatibility</span><span style="color:var(--purple)" id="mcHlaScore">98%</span></div><div class="sbar"><div class="sbar-fill" id="mcHlaBar" style="width:98%"></div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- RECIPIENTS -->
+<section id="recipients">
+  <div class="container">
+    <div class="sec-top">
+      <span class="pill-label"><span class="pip"></span>Protection Proxy Pattern</span>
+      <h2 class="sec-heading">Recipient <span class="grad-text">Registry</span></h2>
+      <p class="sec-sub">PII is masked for unauthorized access. Toggle the Proxy to reveal or conceal patient identity data.</p>
+    </div>
+    <div class="priv-row">
+      <div class="priv-seg">
+        <button class="pseg-btn active" id="btnMask" onclick="setPriv(false)">&#128274;&nbsp;Public View (Masked)</button>
+        <button class="pseg-btn" id="btnReveal" onclick="setPriv(true)">&#129657;&nbsp;Authorized Clinical View</button>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table><thead><tr><th>Patient ID</th><th>Name</th><th>Age</th><th>Blood</th><th>HLA %</th><th>City</th><th>Urgency</th><th>Status</th></tr></thead>
+      <tbody id="tBody"></tbody></table>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="ftop">
+      <div>
+        <div class="fbrand">Transplant<span class="dot">IQ.</span></div>
+        <p class="fdesc">National Organ Allocation &amp; Matching System. Five design patterns. MySQL-backed. JDBC-connected.</p>
+        <div class="chips"><span class="chip">Factory</span><span class="chip">Singleton</span><span class="chip">Chain of Resp.</span><span class="chip">Observer</span><span class="chip">Proxy</span></div>
+      </div>
+      <div><div class="fctitle">Navigation</div><ul class="flinks"><li><a href="#hero">Overview</a></li><li><a href="#registry">Organ Registry</a></li><li><a href="#matching">Matching Pipeline</a></li><li><a href="#recipients">Recipients</a></li></ul></div>
+      <div><div class="fctitle">Tech Stack</div><ul class="flinks"><li><a href="#">Java 17+</a></li><li><a href="#">MySQL 8.0.46</a></li><li><a href="#">JDBC Connector/J 26</a></li><li><a href="#">Android Studio JBR</a></li></ul></div>
+      <div><div class="fctitle">DB Status</div><ul class="flinks"><li><a href="#">&#9679; organmatch_db</a></li><li><a href="#">&#9679; localhost:3306</a></li><li><a href="#">&#9679; 3 Organs</a></li><li><a href="#">&#9679; 11 Recipients</a></li><li><a href="#">&#9679; 2 Matches Saved</a></li></ul></div>
+    </div>
+    <div class="fbot"><span>&copy; 2026 TransplantIQ &mdash; Design Patterns Lab</span><span>MySQL 8.0 &bull; JDBC Connector/J 26.7.0</span></div>
+  </div>
+</footer>
+</div>
+<div class="toasts" id="toasts"></div>
+<script>
+/* ── THEME ──────────────────────────────────────────────── */
+const html = document.documentElement;
+const themeBtn = document.getElementById('themeBtn');
+let dark = true;
+themeBtn.addEventListener('click', () => {
+  dark = !dark;
+  html.setAttribute('data-theme', dark ? 'dark' : 'light');
+  themeBtn.textContent = dark ? '☀️' : '🌙';
+  toast('Display', dark ? 'Dark mode activated' : 'Light mode activated');
+});
+
+/* ── CITY COORDINATES (Haversine inputs) ────────────────── */
+const COORDS = {
+  Nagpur: [21.1458, 79.0882], Mumbai: [19.0760, 72.8777],
+  Pune:   [18.5204, 73.8567], Thane:  [19.2183, 72.9781],
+  Nashik: [19.9975, 73.7898]
+};
+
+/* ── ORGAN DB ───────────────────────────────────────────── */
+const ORGANS_DB = [
+  { id:'K101', type:'kidney', icon:'🟤', bg:'O+',  hla:88, city:'Nagpur' },
+  { id:'H201', type:'heart',  icon:'🫀', bg:'A-',  hla:72, city:'Mumbai' },
+  { id:'L301', type:'liver',  icon:'🟡', bg:'B+',  hla:65, city:'Pune'   },
+];
+
+/* ── RECIPIENT DB ───────────────────────────────────────── */
+const RECS = [
+  { id:'P001', name:'Aarav Sharma',  age:34, bg:'O+',  hla:90, city:'Nagpur',  urg:'CRITICAL', status:'WAITING' },
+  { id:'P002', name:'Meena Patel',   age:52, bg:'A-',  hla:70, city:'Pune',    urg:'HIGH',     status:'WAITING' },
+  { id:'P003', name:'Rajan Gupta',   age:45, bg:'O+',  hla:60, city:'Mumbai',  urg:'MEDIUM',   status:'WAITING' },
+  { id:'P004', name:'Sunita Desai',  age:29, bg:'AB+', hla:55, city:'Thane',   urg:'HIGH',     status:'WAITING' },
+  { id:'P005', name:'Vikram Joshi',  age:61, bg:'O-',  hla:82, city:'Nashik',  urg:'LOW',      status:'WAITING' },
+  { id:'P101', name:'Aarav Mehta',   age:44, bg:'A+',  hla:84, city:'Nagpur',  urg:'HIGH',     status:'WAITING' },
+  { id:'P102', name:'Rahul Sharma',  age:42, bg:'O+',  hla:92, city:'Nagpur',  urg:'CRITICAL', status:'WAITING' },
+  { id:'P103', name:'Neha Verma',    age:39, bg:'O+',  hla:55, city:'Pune',    urg:'HIGH',     status:'WAITING' },
+  { id:'P104', name:'Kunal Joshi',   age:50, bg:'AB+', hla:88, city:'Mumbai',  urg:'MEDIUM',   status:'WAITING' },
+  { id:'P105', name:'Sneha Patil',   age:35, bg:'A-',  hla:87, city:'Thane',   urg:'CRITICAL', status:'WAITING' },
+  { id:'P106', name:'Vikram Desai',  age:48, bg:'A+',  hla:78, city:'Nashik',  urg:'LOW',      status:'WAITING' },
+];
+
+/* ── MATCHING ENGINE ────────────────────────────────────── */
+// Blood type compatibility table
+const BLOOD_COMPAT = {
+  'O-':  ['O-','O+','A-','A+','B-','B+','AB-','AB+'],
+  'O+':  ['O+','A+','B+','AB+'],
+  'A-':  ['A-','A+','AB-','AB+'],
+  'A+':  ['A+','AB+'],
+  'B-':  ['B-','B+','AB-','AB+'],
+  'B+':  ['B+','AB+'],
+  'AB-': ['AB-','AB+'],
+  'AB+': ['AB+'],
+};
+const URG_SCORE = { CRITICAL: 25, HIGH: 15, MEDIUM: 10, LOW: 5 };
+const MAX_DIST_KM = 500;
+
+function haversine(c1, c2) {
+  const R = 6371, toRad = d => d * Math.PI / 180;
+  const dLat = toRad(c2[0] - c1[0]);
+  const dLon = toRad(c2[1] - c1[1]);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(c1[0])) * Math.cos(toRad(c2[0])) * Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function scoreRecipient(organ, rec) {
+  let score = 0, hlaCompat = 0, distKm = 0, rejected = null;
+
+  // Step 1 — Blood Type Matcher
+  const donors = BLOOD_COMPAT[organ.bg] || [];
+  if (!donors.includes(rec.bg)) { return { score:0, hla:0, dist:0, eligible:false, reason:'Blood group mismatch' }; }
+  score += (organ.bg === rec.bg) ? 20 : 15;
+
+  // Step 2 — HLA Tissue Matcher
+  hlaCompat = Math.min(organ.hla, rec.hla);
+  if (hlaCompat < 70) { return { score, hla:hlaCompat, dist:0, eligible:false, reason:`HLA below threshold (${hlaCompat}%)` }; }
+  score += Math.round((hlaCompat / 100) * 40);
+
+  // Step 3 — Geographic Distance Filter
+  const oc = COORDS[organ.city] || [21.1458, 79.0882];
+  const rc = COORDS[rec.city]   || [21.1458, 79.0882];
+  distKm = Math.round(haversine(oc, rc) * 10) / 10;
+  if (distKm > MAX_DIST_KM) { return { score, hla:hlaCompat, dist:distKm, eligible:false, reason:`Distance ${distKm}km exceeds limit` }; }
+  const distScore = distKm < 5 ? 15 : distKm < 50 ? 12 : distKm < 150 ? 8 : 4;
+  score += distScore;
+
+  // Step 4 — Urgency Evaluator
+  score += URG_SCORE[rec.urg] || 5;
+
+  return { score, hla:hlaCompat, dist:distKm, eligible:true, reason:'Qualified' };
+}
+
+function runMatching(organ) {
+  const results = RECS.map(rec => ({ rec, ...scoreRecipient(organ, rec) }))
+                      .filter(r => r.eligible)
+                      .sort((a, b) => b.score - a.score);
+  return results;
+}
+
+/* ── UPDATE MATCH CARD ──────────────────────────────────── */
+function updateMatchCard(organ) {
+  const results = runMatching(organ);
+  const typeCap = organ.type.charAt(0).toUpperCase() + organ.type.slice(1);
+
+  // Organ panel
+  document.getElementById('mcOrganId').textContent = organ.id;
+  document.getElementById('mcOrganDetail').innerHTML =
+    `${typeCap} &bull; ${organ.bg} &bull; ${organ.city}, MH<br>HLA ${organ.hla}% &bull; Status: AVAILABLE`;
+
+  if (results.length === 0) {
+    // No match found
+    document.getElementById('mcScore').textContent = '—';
+    document.getElementById('mcScoreRing').style.background =
+      "conic-gradient(rgba(239,68,68,0.6) 0% 100%,rgba(255,255,255,.07) 100%)";
+    document.getElementById('mcScoreSub').innerHTML =
+      `No Match Found &bull; ${organ.id}<br><span style="margin-top:.3rem;display:block;color:rgba(239,68,68,0.8)">No compatible recipients</span>`;
+    document.getElementById('mcRecipId').textContent = 'N/A';
+    document.getElementById('mcRecipDetail').innerHTML = 'No eligible recipient found<br>in the current registry.';
+    document.getElementById('mcHlaScore').textContent = '—';
+    document.getElementById('mcHlaBar').style.width = '0%';
+    document.getElementById('mcSecondLabel').textContent = 'No 2nd match';
+    document.getElementById('mcSecondScore').textContent = '—';
+    document.getElementById('mcSecondBar').style.width = '0%';
+    toast('Matching Engine', `No compatible recipient found for ${organ.id}`);
+    return;
+  }
+
+  const best = results[0];
+  const pct = Math.round((best.score / 100) * 100);
+  document.getElementById('mcScore').textContent = best.score;
+  document.getElementById('mcScoreRing').style.background =
+    `conic-gradient(#8b5cf6 0% ${pct}%,rgba(255,255,255,.07) ${pct}%)`;
+  document.getElementById('mcScoreSub').innerHTML =
+    `Composite Score &bull; ${organ.id} &rarr; ${best.rec.id}<br><span style="margin-top:.3rem;display:block">Observer Pattern &bull; alerts sent</span>`;
+
+  document.getElementById('mcRecipId').textContent = best.rec.id;
+  document.getElementById('mcRecipDetail').innerHTML =
+    `${best.rec.name} &bull; ${best.rec.bg} &bull; ${best.rec.city}<br>${best.rec.urg} Urgency &bull; ${best.dist} km away`;
+  document.getElementById('mcHlaScore').textContent = best.hla + '%';
+  document.getElementById('mcHlaBar').style.width = best.hla + '%';
+
+  if (results.length > 1) {
+    const second = results[1];
+    document.getElementById('mcSecondLabel').textContent =
+      `${second.rec.id} ${second.rec.name} (2nd best)`;
+    document.getElementById('mcSecondScore').textContent = second.score + ' pts';
+    document.getElementById('mcSecondBar').style.width = second.score + '%';
+  } else {
+    document.getElementById('mcSecondLabel').textContent = 'No 2nd match';
+    document.getElementById('mcSecondScore').textContent = '—';
+    document.getElementById('mcSecondBar').style.width = '0%';
+  }
+
+  toast('Matching Engine', `Best match for ${organ.id}: ${best.rec.id} (${best.rec.name}) — Score ${best.score}`);
+}
+
+/* ── SELECTED ORGAN VISUAL STATE ───────────────────────── */
+let selectedOrganId = 'K101';
+function pickOrgan(id) {
+  selectedOrganId = id;
+  // Highlight selected card
+  document.querySelectorAll('.ocard').forEach(c => c.style.borderColor = '');
+  document.querySelectorAll('.ocard').forEach(c => {
+    if (c.querySelector('.oid') && c.querySelector('.oid').textContent === id) {
+      c.style.borderColor = 'rgba(139,92,246,0.6)';
+      c.style.boxShadow = '0 0 0 2px rgba(139,92,246,0.25)';
+    } else {
+      c.style.boxShadow = '';
+    }
+  });
+  const organ = ORGANS_DB.find(o => o.id === id);
+  if (organ) {
+    updateMatchCard(organ);
+    document.getElementById('matching').scrollIntoView({ behavior:'smooth', block:'center' });
+  }
+}
+
+/* ── RECIPIENT TABLE ────────────────────────────────────── */
+let auth = false;
+function renderRecs() {
+  document.getElementById('tBody').innerHTML = RECS.map(r => {
+    const m = !auth;
+    const nm = `<span class="mx${m ? '' : ' ok'}">${r.name}</span>`;
+    const ag = `<span class="mx${m ? '' : ' ok'}">${r.age}</span>`;
+    const sc = r.status === 'MATCHED' ? 'spill' : 'spill w';
+    return `<tr><td class="tid">${r.id}</td><td class="tname">${nm}</td><td>${ag}</td><td>${r.bg}</td><td>${r.hla}%</td><td>${r.city}</td><td><span class="upill urg-${r.urg}">${r.urg}</span></td><td><span class="${sc}">${r.status}</span></td></tr>`;
+  }).join('');
+}
+function setPriv(a) {
+  auth = a;
+  document.getElementById('btnMask').classList.toggle('active', !a);
+  document.getElementById('btnReveal').classList.toggle('active', a);
+  renderRecs();
+  toast('Protection Proxy', a ? 'Clinical view — PII visible' : 'Public view — PII masked');
+}
+
+/* ── ORGAN REGISTRATION ─────────────────────────────────── */
+let oc = 4, rpOpen = false;
+const ICONS = { kidney:'🟤', heart:'🫀', liver:'🟡', lung:'🫁' };
+function toggleReg() {
+  rpOpen = !rpOpen;
+  document.getElementById('rpBody').classList.toggle('open', rpOpen);
+  document.getElementById('rpArr').classList.toggle('open', rpOpen);
+}
+function addOrgan() {
+  const id   = document.getElementById('fId').value.trim() || `X${oc}0${oc}`;
+  const type = document.getElementById('fType').value;
+  const bg   = document.getElementById('fBg').value;
+  const hla  = Number(document.getElementById('fHla').value) || 80;
+  const city = document.getElementById('fCity').value;
+  const icon = ICONS[type] || '🫁';
+  const typeCap = type.charAt(0).toUpperCase() + type.slice(1);
+
+  // Add to data store
+  ORGANS_DB.push({ id, type, icon, bg, hla, city });
+
+  // Add card to grid
+  const c = document.createElement('div');
+  c.className = 'card ocard';
+  c.onclick = () => pickOrgan(id);
+  c.innerHTML = `
+    <div class="ocard-top"><span class="obadge">${typeCap} &mdash; New</span><span class="oicon">${icon}</span></div>
+    <div class="oid">${id}</div>
+    <div class="otype">${typeCap} &bull; ${city}, MH</div>
+    <div class="oattrs">
+      <div><div class="al">Blood Group</div><div class="av">${bg}</div></div>
+      <div><div class="al">City</div><div class="av">${city}</div></div>
+    </div>
+    <div class="hla-row">
+      <div class="hla-lbl"><span>HLA Profile</span><span>${hla}%</span></div>
+      <div class="hla-track"><div class="hla-fill" style="width:${hla}%"></div></div>
+    </div>
+    <div class="ofoot"><span class="spip"></span>Available for Allocation</div>`;
+  document.getElementById('organGrid').appendChild(c);
+
+  // Update counter
+  document.getElementById('sOrgans').textContent = ORGANS_DB.length;
+  oc++;
+  document.getElementById('fId').value = '';
+
+  toast('Factory Method', `${id} (${type.toUpperCase()}) registered — running match…`);
+
+  // Auto-select new organ and run matching
+  setTimeout(() => pickOrgan(id), 300);
+}
+
+/* ── TOAST ──────────────────────────────────────────────── */
+function toast(type, msg) {
+  const c = document.getElementById('toasts');
+  const t = document.createElement('div');
+  t.className = 'tst';
+  t.innerHTML = `<div class="tst-t">${type}</div><div class="tst-m">${msg}</div>`;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transform='translateX(120%)'; t.style.transition='all .3s'; }, 3600);
+  setTimeout(() => t.remove(), 4000);
+}
+
+/* ── INIT ───────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  renderRecs();
+  // Run initial match for K101
+  const initOrgan = ORGANS_DB.find(o => o.id === 'K101');
+  if (initOrgan) updateMatchCard(initOrgan);
+  // Highlight first card
+  const firstCard = document.querySelector('.ocard');
+  if (firstCard) { firstCard.style.borderColor = 'rgba(139,92,246,0.6)'; firstCard.style.boxShadow = '0 0 0 2px rgba(139,92,246,0.25)'; }
+
+  setTimeout(() => toast('System', 'TransplantIQ initialized — MySQL 8.0 connected'), 900);
+  setTimeout(() => toast('Matching Engine', 'K101 → P102 best match — Score 99'), 2000);
+});
+</script>
+</body>
+</html>
