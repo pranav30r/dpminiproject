@@ -3,71 +3,71 @@ import java.util.List;
 
 /**
  * TransplantIQ - Smart Organ-Recipient Matching System
- * 
+ *
  * Console demo showcasing all 5 Design Patterns:
- *   1. Factory Method  (Jogi)  - OrganFactory creates organ instances
- *   2. Singleton        (Jogi)  - NationalTransplantRegistry single instance
- *   3. Chain of Responsibility (Hiten) - Compatibility handler pipeline
- *   4. Observer         (Rathi) - AllocationService notifies observers on match
- *   5. Proxy            (Chetan) - PrivacyProxy masks PII for unauthorized users
+ *   1. Factory Method          - OrganFactory creates organ instances
+ *   2. Singleton               - NationalTransplantRegistry single instance
+ *   3. Chain of Responsibility - Compatibility handler pipeline
+ *   4. Observer                - AllocationService notifies observers on match
+ *   5. Proxy                   - PrivacyProxy masks PII for unauthorized users
  */
 public class ChainDemo {
 
     public static void main(String[] args) {
 
-        System.out.println("╔══════════════════════════════════════════════════════════════╗");
-        System.out.println("║         TRANSPLANTIQ - Smart Organ Matching System          ║");
-        System.out.println("║              Design Patterns Lab Mini Project               ║");
-        System.out.println("╚══════════════════════════════════════════════════════════════╝");
+        System.out.println("============================================================");
+        System.out.println("      TRANSPLANTIQ - Smart Organ Matching System            ");
+        System.out.println("           Design Patterns Lab Mini Project                 ");
+        System.out.println("============================================================");
         System.out.println();
 
-        // ──────────────────────────────────────────────────────────────
-        // PATTERN 2: Singleton (Jogi)
+        // ------------------------------------------------------------
+        // PATTERN 2: Singleton
         // NationalTransplantRegistry.getInstance() always returns the
         // same object.  Private constructor prevents external creation.
-        // ──────────────────────────────────────────────────────────────
+        // ------------------------------------------------------------
         NationalTransplantRegistry registry = NationalTransplantRegistry.getInstance();
         registry.clearInMemoryData();
 
-        System.out.println("=== [Jogi] Pattern 2: Singleton ===");
-        System.out.println("Registry instance #1 : " + registry.hashCode());
+        System.out.println("=== Singleton: NationalTransplantRegistry ===");
+        System.out.println("  Instance #1: " + registry.hashCode());
         NationalTransplantRegistry registryAgain = NationalTransplantRegistry.getInstance();
-        System.out.println("Registry instance #2 : " + registryAgain.hashCode());
-        System.out.println("Same instance?       : " + (registry == registryAgain));
+        System.out.println("  Instance #2: " + registryAgain.hashCode());
+        System.out.println("Same instance: " + (registry == registryAgain));
         System.out.println();
 
-        // ──────────────────────────────────────────────────────────────
-        // PATTERN 1: Factory Method (Jogi)
+        // ------------------------------------------------------------
+        // PATTERN 1: Factory Method
         // OrganFactory.createOrgan(type) returns the correct subclass
         // (Kidney, Heart, Liver, Lung) without the caller knowing
         // which concrete class was instantiated.
-        // ──────────────────────────────────────────────────────────────
-        System.out.println("=== [Jogi] Pattern 1: Factory Method ===");
+        // ------------------------------------------------------------
+        System.out.println("=== Factory Method: OrganFactory ===");
         seedRegistry(registry);
         System.out.println();
 
-        // ──────────────────────────────────────────────────────────────
-        // PATTERN 4: Observer (Rathi)
+        // ------------------------------------------------------------
+        // PATTERN 4: Observer
         // AllocationService is the Subject.  Three concrete observers
         // are registered.  When confirmMatch() is called they each
         // receive the MatchResult automatically.
-        // ──────────────────────────────────────────────────────────────
+        // ------------------------------------------------------------
         AllocationService allocationService = AllocationService.getInstance();
         allocationService.clearNotifications();
         allocationService.addObserver(new TransplantCenterObserver());
         allocationService.addObserver(new DoctorObserver());
         allocationService.addObserver(new TransportTeamObserver());
 
-        // ──────────────────────────────────────────────────────────────
-        // PATTERN 3: Chain of Responsibility (Hiten)
+        // ------------------------------------------------------------
+        // PATTERN 3: Chain of Responsibility
         // Four handlers are chained together.  Each one either rejects
         // the candidate or passes it to the next handler.
-        // ──────────────────────────────────────────────────────────────
+        // ------------------------------------------------------------
         MatchingConfig config = MatchingConfig.defaultConfig();
-        CompatibilityHandler bloodTypeMatcher       = new BloodTypeMatcher(config);
-        CompatibilityHandler tissueHlaMatcher       = new TissueHLAMatcher(config);
-        CompatibilityHandler geographicDistFilter   = new GeographicDistanceFilter(config);
-        CompatibilityHandler urgencyScoreEvaluator  = new UrgencyScoreEvaluator();
+        CompatibilityHandler bloodTypeMatcher      = new BloodTypeMatcher(config);
+        CompatibilityHandler tissueHlaMatcher      = new TissueHLAMatcher(config);
+        CompatibilityHandler geographicDistFilter  = new GeographicDistanceFilter(config);
+        CompatibilityHandler urgencyScoreEvaluator = new UrgencyScoreEvaluator();
 
         bloodTypeMatcher.setNext(tissueHlaMatcher);
         tissueHlaMatcher.setNext(geographicDistFilter);
@@ -80,37 +80,37 @@ public class ChainDemo {
                 registry, engine, allocationService
         );
 
-        // ──────────────────────────────────────────────────────────
+        // ----------------------------------------------------------
         // RUN MATCHING FOR KIDNEY K101
-        // ──────────────────────────────────────────────────────────
-        System.out.println("=== [Hiten] Pattern 3: Chain of Responsibility ===");
+        // ----------------------------------------------------------
+        System.out.println("=== Chain of Responsibility: Compatibility Evaluation ===");
         System.out.println("Running matching pipeline for Organ ID: K101 (Kidney, O+)");
         System.out.println();
 
         MatchResult kidneyResult = matchingService.findBestMatchForOrgan("K101");
         printEvaluationDetails(kidneyResult);
 
-        System.out.println("─── Best Match for K101 ───");
+        System.out.println("--- Best Match for K101 ---");
         printBestMatch(kidneyResult);
         System.out.println();
 
-        // ──────────────────────────────────────────────────────────
+        // ----------------------------------------------------------
         // RUN MATCHING FOR HEART H201
-        // ──────────────────────────────────────────────────────────
+        // ----------------------------------------------------------
         System.out.println("Running matching pipeline for Organ ID: H201 (Heart, A-)");
         System.out.println();
 
         MatchResult heartResult = matchingService.findBestMatchForOrgan("H201");
         printEvaluationDetails(heartResult);
 
-        System.out.println("─── Best Match for H201 ───");
+        System.out.println("--- Best Match for H201 ---");
         printBestMatch(heartResult);
         System.out.println();
 
-        // ──────────────────────────────────────────────────────────
+        // ----------------------------------------------------------
         // OBSERVER NOTIFICATIONS LOG
-        // ──────────────────────────────────────────────────────────
-        System.out.println("=== [Rathi] Pattern 4: Observer - Notification Log ===");
+        // ----------------------------------------------------------
+        System.out.println("=== Observer: AllocationService ===");
         List<String> log = allocationService.getNotificationsLog();
         if (log.isEmpty()) {
             System.out.println("  (no notifications)");
@@ -121,45 +121,45 @@ public class ChainDemo {
         }
         System.out.println();
 
-        // ──────────────────────────────────────────────────────────────
-        // PATTERN 5: Proxy (Chetan)
+        // ------------------------------------------------------------
+        // PATTERN 5: Proxy
         // PrivacyProxy wraps a real Recipient (which implements
         // PatientRecord).  PII fields are masked for unauthorized users
         // while medical fields pass through untouched.
-        // ──────────────────────────────────────────────────────────────
-        System.out.println("=== [Chetan] Pattern 5: Proxy (Privacy Protection) ===");
+        // ------------------------------------------------------------
+        System.out.println("=== Protection Proxy: PrivacyProxy ===");
         if (kidneyResult.hasMatch()) {
-            PatientRecord realRecord = kidneyResult.getBestRecipient();
+            PatientRecord realRecord       = kidneyResult.getBestRecipient();
             PatientRecord unauthorizedView = new PrivacyProxy(realRecord, false);
             PatientRecord authorizedView   = new PrivacyProxy(realRecord, true);
 
             System.out.println();
-            System.out.println("--- UNAUTHORIZED VIEW (PII masked) ---");
+            System.out.println("  PUBLIC (PII Redacted):");
             printPatientRecord(unauthorizedView);
 
             System.out.println();
-            System.out.println("--- AUTHORIZED CLINICAL VIEW (PII visible) ---");
+            System.out.println("  AUTHORIZED (PII Visible):");
             printPatientRecord(authorizedView);
         }
         System.out.println();
 
-        // ──────────────────────────────────────────────────────────
+        // ----------------------------------------------------------
         // SUMMARY
-        // ──────────────────────────────────────────────────────────
-        System.out.println("╔══════════════════════════════════════════════════════════════╗");
-        System.out.println("║                       SYSTEM SUMMARY                        ║");
-        System.out.println("╠══════════════════════════════════════════════════════════════╣");
-        System.out.println("║  Registered Organs     : " + pad(registry.getRegisteredOrgans().size()) + "║");
-        System.out.println("║  Registered Recipients : " + pad(registry.getRegisteredRecipients().size()) + "║");
-        System.out.println("║  Successful Matches    : " + pad(registry.getRecordedMatches().size()) + "║");
-        System.out.println("║  Observer Alerts Sent  : " + pad(allocationService.getNotificationsLog().size()) + "║");
-        System.out.println("╚══════════════════════════════════════════════════════════════╝");
+        // ----------------------------------------------------------
+        System.out.println("+---------------------------------------------------------------+");
+        System.out.println("|                       SYSTEM SUMMARY                         |");
+        System.out.println("+---------------------------------------------------------------+");
+        System.out.println("|  Registered Organs     : " + pad(registry.getRegisteredOrgans().size())          + "|");
+        System.out.println("|  Registered Recipients : " + pad(registry.getRegisteredRecipients().size())      + "|");
+        System.out.println("|  Successful Matches    : " + pad(registry.getRecordedMatches().size())           + "|");
+        System.out.println("|  Observer Alerts Sent  : " + pad(allocationService.getNotificationsLog().size()) + "|");
+        System.out.println("+---------------------------------------------------------------+");
     }
 
-    // ──────────────────────────────────────────────────────────────
+    // ------------------------------------------------------------
     // HELPER : Seed sample data into the registry
     // Uses Factory Method inside registerOrgan()
-    // ──────────────────────────────────────────────────────────────
+    // ------------------------------------------------------------
     private static void seedRegistry(NationalTransplantRegistry registry) {
         // Kidney donor in Nagpur
         DonorOrgan kidney = registry.registerOrgan(
@@ -221,9 +221,9 @@ public class ChainDemo {
         System.out.println("  Registered " + registry.getRegisteredRecipients().size() + " recipients.");
     }
 
-    // ──────────────────────────────────────────────────────────────
+    // ------------------------------------------------------------
     // HELPER : Print detailed evaluation for every candidate
-    // ──────────────────────────────────────────────────────────────
+    // ------------------------------------------------------------
     private static void printEvaluationDetails(MatchResult result) {
         for (RecipientEvaluation eval : result.getAllEvaluations()) {
             System.out.println("  Recipient : " + eval.getRecipient().getPatientId()
@@ -240,9 +240,9 @@ public class ChainDemo {
         }
     }
 
-    // ──────────────────────────────────────────────────────────────
+    // ------------------------------------------------------------
     // HELPER : Print the best-match summary
-    // ──────────────────────────────────────────────────────────────
+    // ------------------------------------------------------------
     private static void printBestMatch(MatchResult result) {
         if (!result.hasMatch()) {
             System.out.println("  No suitable recipient was found.");
@@ -261,9 +261,9 @@ public class ChainDemo {
         System.out.println("  Distance     : " + round(eval.getDistanceKm()) + " km");
     }
 
-    // ──────────────────────────────────────────────────────────────
+    // ------------------------------------------------------------
     // HELPER : Print a PatientRecord (works with Proxy or Real)
-    // ──────────────────────────────────────────────────────────────
+    // ------------------------------------------------------------
     private static void printPatientRecord(PatientRecord record) {
         System.out.println("  Patient ID  : " + record.getPatientId());
         System.out.println("  Name        : " + record.getName());
@@ -281,6 +281,6 @@ public class ChainDemo {
     }
 
     private static String pad(int number) {
-        return String.format("%-35d", number);
+        return String.format("%-37d", number);
     }
 }
