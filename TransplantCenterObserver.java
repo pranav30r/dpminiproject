@@ -7,6 +7,6 @@ public class TransplantCenterObserver implements MatchObserver {
             + ". Compatibility Score: " + match.getBestEvaluation().getCompatibilityScore() + "%.";
         
         System.out.println(msg);
-        AllocationService.getInstance().logNotification(msg);
+        AllocationService.getInstance().logNotification("TransplantCenter", match, msg);
     }
 }

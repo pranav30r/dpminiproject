@@ -7,6 +7,7 @@ public class MatchResult {
     private final Recipient bestRecipient;
     private final RecipientEvaluation bestEvaluation;
     private final List<RecipientEvaluation> allEvaluations;
+    private Integer matchId;
 
     public MatchResult(
             DonorOrgan organ,
@@ -38,5 +39,13 @@ public class MatchResult {
 
     public List<RecipientEvaluation> getAllEvaluations() {
         return Collections.unmodifiableList(allEvaluations);
+    }
+
+    public Integer getMatchId() {
+        return matchId;
+    }
+
+    public void setMatchId(Integer matchId) {
+        this.matchId = matchId;
     }
 }

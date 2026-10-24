@@ -7,6 +7,6 @@ public class TransportTeamObserver implements MatchObserver {
             + ") to Patient location (" + match.getBestRecipient().getLocation().getCityName() + ").";
         
         System.out.println(msg);
-        AllocationService.getInstance().logNotification(msg);
+        AllocationService.getInstance().logNotification("TransportTeam", match, msg);
     }
 }

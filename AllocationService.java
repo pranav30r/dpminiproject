@@ -21,6 +21,10 @@ public class AllocationService {
         observers.add(observer);
     }
 
+    public void clearObservers() {
+        observers.clear();
+    }
+
     public void removeObserver(MatchObserver observer) {
         observers.remove(observer);
     }
@@ -38,8 +42,18 @@ public class AllocationService {
         notificationsLog.add(message);
     }
 
+    public void logNotification(String observerType, MatchResult match, String message) {
+        notificationsLog.add(message);
+        NationalTransplantRegistry.getInstance().recordNotification(match, observerType, message);
+    }
+
     public List<String> getNotificationsLog() {
         return Collections.unmodifiableList(notificationsLog);
+    }
+
+    public void replaceNotificationsLog(List<String> messages) {
+        notificationsLog.clear();
+        notificationsLog.addAll(messages);
     }
 
     public void clearNotifications() {

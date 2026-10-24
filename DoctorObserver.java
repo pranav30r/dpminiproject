@@ -7,6 +7,6 @@ public class DoctorObserver implements MatchObserver {
             + ". Urgency Level: " + match.getBestRecipient().getUrgency() + ".";
         
         System.out.println(msg);
-        AllocationService.getInstance().logNotification(msg);
+        AllocationService.getInstance().logNotification("Doctor", match, msg);
     }
 }
