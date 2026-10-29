@@ -13,6 +13,10 @@ public class Location {
         return cityName;
     }
 
+    public String getCity() {
+        return cityName;
+    }
+
     public double getLatitude() {
         return latitude;
     }

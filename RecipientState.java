@@ -7,6 +7,10 @@ public class RecipientState {
         this.status = status;
     }
 
+    public RecipientState(String patientId, String status) {
+        this(status);
+    }
+
     public void setStatus(String status) {
         this.status = status;
     }

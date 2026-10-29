@@ -9,7 +9,7 @@ public abstract class TransplantProcess {
     // Template Method: the fixed sequence of steps
     public final void processTransplant(DonorOrgan organ) {
 
-        System.out.println("\n--- Transplant Process Started ---");
+        System.out.println("--- Transplant Process Started ---");
 
         if (!validateOrgan(organ)) {
             System.out.println("Organ is not available for processing.");
@@ -41,13 +41,12 @@ public abstract class TransplantProcess {
         }
 
         System.out.println("Step 4: Recipient selected.");
-        System.out.println(
-                "Selected Patient ID: "
-                + selectedRecipient.getPatientId()
-        );
-
-        System.out.println("Organ Type: " + organ.getOrganType());
+        System.out.println("Selected Patient ID: " + selectedRecipient.getPatientId() + " | Organ Type: " + organ.getOrganType());
         System.out.println("Step 5: Processing completed.");
+    }
+
+    public void processTransplant(DonorOrgan organ, TransplantCoordinator coordinator, MatchingStrategy strategy) {
+        processTransplant(organ);
     }
 
     // Common validation logic
